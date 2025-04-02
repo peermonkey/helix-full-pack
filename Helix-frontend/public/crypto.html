@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cryptocurrency Data</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+    
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px 0;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      min-width: 150px;
+    }
+    
+    label {
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    
+    select, button {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    button {
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s;
+    }
+    
+    button:hover {
+      background-color: #2980b9;
+    }
+    
+    .chart-container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      height: 400px;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+    
+    .data-table th, .data-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .data-table th {
+      background-color: #f2f2f2;
+      font-weight: 600;
+    }
+    
+    .data-table tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    
+    .data-table tr:hover {
+      background-color: #f1f1f1;
+    }
+    
+    .error {
+      color: #e74c3c;
+      padding: 10px;
+      background-color: #fadbd8;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    
+    .price-up {
+      color: #2ecc71;
+    }
+    
+    .price-down {
+      color: #e74c3c;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 20px;
+      font-size: 1.2rem;
+      color: #7f8c8d;
+    }
+
+    @media (max-width: 768px) {
+      .controls {
+        flex-direction: column;
+      }
+      
+      .control-group {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Cryptocurrency Data Viewer</h1>
+  </header>
+  
+  <div class="container">
+    <div class="controls">
+      <div class="control-group">
+        <label for="coin-select">Cryptocurrency:</label>
+        <select id="coin-select">
+          <option value="btc">Bitcoin (BTC)</option>
+          <option value="eth">Ethereum (ETH)</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label for="timeframe-select">Timeframe:</label>
+        <select id="timeframe-select">
+          <option value="1m">1 Minute</option>
+          <option value="3m">3 Minutes</option>
+          <option value="5m">5 Minutes</option>
+          <option value="15m">15 Minutes</option>
+          <option value="30m">30 Minutes</option>
+          <option value="1h">1 Hour</option>
+          <option value="4h">4 Hours</option>
+          <option value="6h">6 Hours</option>
+          <option value="8h">8 Hours</option>
+          <option value="12h">12 Hours</option>
+          <option value="1d">1 Day</option>
+          <option value="1w">1 Week</option>
+          <option value="1M">1 Month</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label for="limit-select">Data Points:</label>
+        <select id="limit-select">
+          <option value="20">20</option>
+          <option value="50">50</option>
+          <option value="100" selected>100</option>
+          <option value="200">200</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <label>&nbsp;</label>
+        <button id="fetch-data-btn">Fetch Data</button>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <canvas id="price-chart"></canvas>
+    </div>
+    
+    <div id="data-container">
+      <div class="loading">Select options and click "Fetch Data" to load cryptocurrency data</div>
+    </div>
+  </div>
+  
+  <script src="crypto.js"></script>
+</body>
+</html> 

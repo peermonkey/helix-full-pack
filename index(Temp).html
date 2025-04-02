@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helix Trading Bot Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --mt5-bg: #1e222d;
+            --mt5-panel: #262b38;
+            --mt5-text: #e0e0e0;
+            --mt5-highlight: #3370ff;
+            --mt5-green: #26a69a;
+            --mt5-red: #ef5350;
+            --mt5-yellow: #ffca28;
+            --mt5-border: #373d4e;
+            --mt5-hover: #2d3446;
+        }
+        
+        body {
+            background-color: var(--mt5-bg);
+            color: var(--mt5-text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .navbar {
+            background-color: var(--mt5-panel);
+            border-bottom: 1px solid var(--mt5-border);
+            padding: 0.5rem 1rem;
+        }
+        
+        .navbar-brand {
+            color: var(--mt5-highlight);
+            font-weight: bold;
+        }
+        
+        .navbar-brand img {
+            margin-right: 10px;
+        }
+        
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 56px);
+            overflow: hidden;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            background-color: var(--mt5-panel);
+            border-right: 1px solid var(--mt5-border);
+            width: 250px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .widget-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            padding: 10px;
+            overflow: auto;
+        }
+        
+        .widget {
+            background-color: var(--mt5-panel);
+            border: 1px solid var(--mt5-border);
+            border-radius: 4px;
+            padding: 15px;
+            overflow: auto;
+        }
+        
+        .widget-header {
+            border-bottom: 1px solid var(--mt5-border);
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .widget-title {
+            color: var(--mt5-highlight);
+        }
+        
+        .widget-controls i {
+            cursor: pointer;
+            margin-left: 8px;
+            opacity: 0.7;
+        }
+        
+        .widget-controls i:hover {
+            opacity: 1;
+        }
+        
+        .status-bar {
+            background-color: var(--mt5-panel);
+            border-top: 1px solid var(--mt5-border);
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .status-item i {
+            margin-right: 5px;
+        }
+        
+        /* Table styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th {
+            background-color: rgba(0,0,0,0.2);
+            text-align: left;
+            padding: 8px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--mt5-border);
+        }
+        
+        .data-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--mt5-border);
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: var(--mt5-hover);
+        }
+        
+        /* Parameter styles */
+        .parameter-group {
+            margin-bottom: 15px;
+        }
+        
+        .parameter-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--mt5-highlight);
+            border-bottom: 1px solid var(--mt5-border);
+            padding-bottom: 5px;
+        }
+        
+        .parameter-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .parameter-name {
+            color: var(--mt5-text);
+        }
+        
+        .parameter-value {
+            font-weight: bold;
+        }
+        
+        /* Control panel */
+        .control-button {
+            background-color: var(--mt5-panel);
+            border: 1px solid var(--mt5-border);
+            color: var(--mt5-text);
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .control-button:hover {
+            background-color: var(--mt5-hover);
+        }
+        
+        .control-button.pause {
+            background-color: var(--mt5-yellow);
+            color: #000;
+        }
+        
+        .control-button.resume {
+            background-color: var(--mt5-green);
+            color: #fff;
+        }
+        
+        .parameter-input {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .parameter-input input {
+            flex: 1;
+            background-color: var(--mt5-bg);
+            border: 1px solid var(--mt5-border);
+            color: var(--mt5-text);
+            padding: 5px 8px;
+            border-radius: 4px 0 0 4px;
+        }
+        
+        .parameter-input button {
+            background-color: var(--mt5-highlight);
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        
+        /* Market prices */
+        .price-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .price-box {
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 4px;
+            padding: 10px;
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .price-title {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .price-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .price-delta {
+            font-size: 0.8rem;
+        }
+        
+        .positive {
+            color: var(--mt5-green);
+        }
+        
+        .negative {
+            color: var(--mt5-red);
+        }
+        
+        /* Log console */
+        .log-console {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            background-color: var(--mt5-bg);
+            padding: 10px;
+            height: 100%;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .widget-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                width: 200px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--mt5-border);
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <span class="navbar-brand">
+                <i class="bi bi-graph-up"></i> Helix Trading Bot
+            </span>
+            <div class="navbar-text">
+                <span id="trading-status" class="badge bg-success">ACTIVE</span>
+                <span id="connection-status" class="badge bg-success ms-2">CONNECTED</span>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="content-container">
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="parameter-group">
+                    <div class="parameter-title">Control Panel</div>
+                    <button id="pause-button" class="control-button pause">
+                        <i class="bi bi-pause-fill"></i> Pause Trading
+                    </button>
+                    <button id="resume-button" class="control-button resume" style="display: none;">
+                        <i class="bi bi-play-fill"></i> Resume Trading
+                    </button>
+                    <button id="status-button" class="control-button">
+                        <i class="bi bi-info-circle"></i> Show Status
+                    </button>
+                </div>
+                
+                <div class="parameter-group">
+                    <div class="parameter-title">Parameters</div>
+                    
+                    <div class="parameter-item">
+                        <span class="parameter-name">BTC Quantity:</span>
+                        <span id="btc-qty" class="parameter-value">0.01</span>
+                    </div>
+                    <div class="parameter-input">
+                        <input type="number" id="new-btc-qty" placeholder="New BTC Qty" step="0.01" min="0.01">
+                        <button onclick="setParameter('btc_qty')">Set</button>
+                    </div>
+                    
+                    <div class="parameter-item">
+                        <span class="parameter-name">ETH Quantity:</span>
+                        <span id="eth-qty" class="parameter-value">0.27</span>
+                    </div>
+                    <div class="parameter-input">
+                        <input type="number" id="new-eth-qty" placeholder="New ETH Qty" step="0.01" min="0.01">
+                        <button onclick="setParameter('eth_qty')">Set</button>
+                    </div>
+                    
+                    <div class="parameter-item">
+                        <span class="parameter-name">Helix Threshold:</span>
+                        <span id="helix-threshold" class="parameter-value">0.03</span>
+                    </div>
+                    <div class="parameter-input">
+                        <input type="number" id="new-threshold" placeholder="New Threshold" step="0.01" min="0.01">
+                        <button onclick="setParameter('threshold')">Set</button>
+                    </div>
+                    
+                    <div class="parameter-item">
+                        <span class="parameter-name">Step Size:</span>
+                        <span id="step-size" class="parameter-value">0.02</span>
+                    </div>
+                    <div class="parameter-input">
+                        <input type="number" id="new-step" placeholder="New Step Size" step="0.01" min="0.01">
+                        <button onclick="setParameter('step')">Set</button>
+                    </div>
+                    
+                    <div class="parameter-item">
+                        <span class="parameter-name">PnL Target:</span>
+                        <span id="pnl-target" class="parameter-value">2.5</span>
+                    </div>
+                    <div class="parameter-input">
+                        <input type="number" id="new-pnl-target" placeholder="New PnL Target" step="0.5" min="0.5">
+                        <button onclick="setParameter('pnl_target')">Set</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="widget-container">
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="widget-title">Market Overview</div>
+                        <div class="widget-controls">
+                            <i class="bi bi-arrow-clockwise" onclick="refreshData()"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="price-container">
+                        <div class="price-box">
+                            <div class="price-title">BTC/USD</div>
+                            <div id="btc-price" class="price-value">0.00</div>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-title">ETH/USD</div>
+                            <div id="eth-price" class="price-value">0.00</div>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-title">BTC/ETH Ratio</div>
+                            <div id="btc-eth-ratio" class="price-value">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="price-container">
+                        <div class="price-box">
+                            <div class="price-title">Helix 15m</div>
+                            <div id="helix-15m" class="price-value">0.000</div>
+                        </div>
+                        <div class="price-box">
+                            <div class="price-title">Helix 1h</div>
+                            <div id="helix-1h" class="price-value">0.000</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="widget-title">Active Positions</div>
+                        <div class="widget-controls">
+                            <i class="bi bi-arrow-clockwise" onclick="refreshPositions()"></i>
+                        </div>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Event ID</th>
+                                <th>Helix Entry</th>
+                                <th>Tickets</th>
+                                <th>PnL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positions-table-body">
+                            <!-- Positions will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="widget-title">PnL Overview</div>
+                        <div class="widget-controls">
+                            <i class="bi bi-arrow-clockwise" onclick="refreshData()"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="parameter-group">
+                        <div class="parameter-item">
+                            <span class="parameter-name">Total Open PnL:</span>
+                            <span id="total-pnl" class="parameter-value">$0.00</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-name">Booked PnL:</span>
+                            <span id="booked-pnl" class="parameter-value">$0.00</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-name">PnL Target:</span>
+                            <span id="pnl-target-display" class="parameter-value">$500.00</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-name">Opened Events:</span>
+                            <span id="opened-events" class="parameter-value">0</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-name">Closed Events:</span>
+                            <span id="closed-events" class="parameter-value">0</span>
+                        </div>
+                        <div class="parameter-item">
+                            <span class="parameter-name">Active Events:</span>
+                            <span id="active-events" class="parameter-value">0 / 10</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="widget">
+                    <div class="widget-header">
+                        <div class="widget-title">Log Console</div>
+                        <div class="widget-controls">
+                            <i class="bi bi-trash" onclick="clearLogs()"></i>
+                        </div>
+                    </div>
+                    
+                    <div id="log-console" class="log-console">
+                        <!-- Log messages will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-left">
+                <span class="status-item">
+                    <i class="bi bi-circle-fill text-success"></i> Bot running
+                </span>
+                <span class="status-item">
+                    <i class="bi bi-clock"></i> <span id="current-time">00:00:00</span>
+                </span>
+            </div>
+            <div class="status-right">
+                <span class="status-item">
+                    <i class="bi bi-graph-up"></i> Trading Status: <span id="trading-status-text">Active</span>
+                </span>
+                <span class="status-item">
+                    <i class="bi bi-currency-dollar"></i> PnL: <span id="status-pnl">$0.00</span>
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // WebSocket connection
+        let ws;
+        let reconnectInterval = 1000; // Start with 1s reconnect time
+        let lastHelix15m = 0;
+        let lastHelix1h = 0;
+        
+        // Initialize the WebSocket connection
+        function connectWebSocket() {
+            ws = new WebSocket(`ws://${window.location.hostname}:8081`);
+            
+            ws.onopen = function() {
+                console.log('WebSocket connected');
+                document.getElementById('connection-status').className = 'badge bg-success ms-2';
+                document.getElementById('connection-status').innerText = 'CONNECTED';
+                reconnectInterval = 1000; // Reset reconnect interval
+            };
+            
+            ws.onmessage = function(event) {
+                const message = JSON.parse(event.data);
+                handleWebSocketMessage(message);
+            };
+            
+            ws.onclose = function() {
+                document.getElementById('connection-status').className = 'badge bg-danger ms-2';
+                document.getElementById('connection-status').innerText = 'DISCONNECTED';
+                console.log(`WebSocket disconnected. Reconnecting in ${reconnectInterval/1000}s...`);
+                
+                // Exponential backoff for reconnection (max 30s)
+                setTimeout(connectWebSocket, reconnectInterval);
+                reconnectInterval = Math.min(reconnectInterval * 1.5, 30000);
+            };
+            
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+        
+        // Handle incoming WebSocket messages
+        function handleWebSocketMessage(message) {
+            switch(message.type) {
+                case 'status_update':
+                    updateBotStatus(message.data);
+                    break;
+                    
+                case 'log':
+                    addLogMessage(message.data);
+                    break;
+                    
+                case 'position_opened':
+                    addLogMessage(`🚀 New position opened: Event ${message.data.event_id}, ${message.data.type} at Helix ${message.data.helix.toFixed(4)}`);
+                    refreshPositions();
+                    break;
+                    
+                case 'position_closed':
+                    addLogMessage(`✅ Position closed: Event ${message.data.event_id}, PnL: $${message.data.pnl.toFixed(2)}, Reason: ${message.data.reason}`);
+                    refreshPositions();
+                    break;
+                    
+                case 'pnl_update':
+                    updatePnLValues(message.data);
+                    break;
+                    
+                case 'trading_paused':
+                    updateTradingStatus(true);
+                    addLogMessage("⏸️ Trading paused");
+                    break;
+                    
+                case 'trading_resumed':
+                    updateTradingStatus(false);
+                    addLogMessage("▶️ Trading resumed");
+                    break;
+                    
+                case 'parameter_changed':
+                    updateParameter(message.data.parameter, message.data.value);
+                    break;
+            }
+        }
+        
+        // Update bot status display
+        function updateBotStatus(data) {
+            // Update trading status
+            updateTradingStatus(data.trading_status === 'paused');
+            
+            // Update market data
+            document.getElementById('btc-price').innerText = `$${data.market_data.btc_price.toFixed(2)}`;
+            document.getElementById('eth-price').innerText = `$${data.market_data.eth_price.toFixed(2)}`;
+            document.getElementById('btc-eth-ratio').innerText = data.market_data.btc_eth_ratio;
+            
+            const helix15m = data.market_data.helix_15m;
+            const helix1h = data.market_data.helix_1h;
+            
+            document.getElementById('helix-15m').innerText = helix15m.toFixed(4);
+            document.getElementById('helix-15m').className = helix15m > 0 ? 'price-value positive' : helix15m < 0 ? 'price-value negative' : 'price-value';
+            
+            document.getElementById('helix-1h').innerText = helix1h.toFixed(4);
+            document.getElementById('helix-1h').className = helix1h > 0 ? 'price-value positive' : helix1h < 0 ? 'price-value negative' : 'price-value';
+            
+            // Update parameters
+            document.getElementById('btc-qty').innerText = data.parameters.btc_qty;
+            document.getElementById('eth-qty').innerText = data.parameters.eth_qty;
+            document.getElementById('helix-threshold').innerText = data.parameters.threshold;
+            document.getElementById('step-size').innerText = data.parameters.step_size;
+            document.getElementById('pnl-target').innerText = data.parameters.pnl_target;
+            document.getElementById('pnl-target-display').innerText = `$${data.parameters.pnl_target}`;
+            
+            // Update PnL values
+            document.getElementById('total-pnl').innerText = `$${data.total_pnl.toFixed(2)}`;
+            document.getElementById('total-pnl').className = data.total_pnl >= 0 ? 'parameter-value positive' : 'parameter-value negative';
+            
+            document.getElementById('booked-pnl').innerText = `$${data.booked_pnl.toFixed(2)}`;
+            document.getElementById('booked-pnl').className = data.booked_pnl >= 0 ? 'parameter-value positive' : 'parameter-value negative';
+            
+            document.getElementById('status-pnl').innerText = `$${data.total_pnl.toFixed(2)}`;
+            document.getElementById('status-pnl').className = data.total_pnl >= 0 ? 'text-success' : 'text-danger';
+            
+            // Update event counters
+            document.getElementById('opened-events').innerText = data.opened_events;
+            document.getElementById('closed-events').innerText = data.closed_events;
+            document.getElementById('active-events').innerText = `${data.active_events} / ${data.max_events}`;
+            
+            // Update positions
+            const positionsTable = document.getElementById('positions-table-body');
+            positionsTable.innerHTML = '';
+            
+            if (data.positions && data.positions.length > 0) {
+                data.positions.forEach(position => {
+                    const row = document.createElement('tr');
+                    
+                    const eventIdCell = document.createElement('td');
+                    eventIdCell.innerText = position.event_id;
+                    row.appendChild(eventIdCell);
+                    
+                    const helixCell = document.createElement('td');
+                    helixCell.innerText = position.helix.toFixed(4);
+                    helixCell.className = position.helix > 0 ? 'positive' : position.helix < 0 ? 'negative' : '';
+                    row.appendChild(helixCell);
+                    
+                    const ticketsCell = document.createElement('td');
+                    const tickets = position.positions.map(p => p.ticket).join(', ');
+                    ticketsCell.innerText = tickets;
+                    row.appendChild(ticketsCell);
+                    
+                    const pnlCell = document.createElement('td');
+                    pnlCell.innerText = `$${position.pnl.toFixed(2)}`;
+                    pnlCell.className = position.pnl >= 0 ? 'positive' : 'negative';
+                    row.appendChild(pnlCell);
+                    
+                    positionsTable.appendChild(row);
+                });
+            } else {
+                const emptyRow = document.createElement('tr');
+                const emptyCell = document.createElement('td');
+                emptyCell.colSpan = 4;
+                emptyCell.innerText = 'No active positions';
+                emptyCell.style.textAlign = 'center';
+                emptyRow.appendChild(emptyCell);
+                positionsTable.appendChild(emptyRow);
+            }
+            
+            // Flash the Helix values if they've changed
+            if (lastHelix15m !== helix15m) {
+                flashElement('helix-15m');
+                lastHelix15m = helix15m;
+            }
+            
+            if (lastHelix1h !== helix1h) {
+                flashElement('helix-1h');
+                lastHelix1h = helix1h;
+            }
+        }
+        
+        // Update PnL values
+        function updatePnLValues(data) {
+            document.getElementById('total-pnl').innerText = `$${data.total_pnl.toFixed(2)}`;
+            document.getElementById('total-pnl').className = data.total_pnl >= 0 ? 'parameter-value positive' : 'parameter-value negative';
+            
+            document.getElementById('booked-pnl').innerText = `$${data.total_booked_pnl.toFixed(2)}`;
+            document.getElementById('booked-pnl').className = data.total_booked_pnl >= 0 ? 'parameter-value positive' : 'parameter-value negative';
+            
+            document.getElementById('status-pnl').innerText = `$${data.total_pnl.toFixed(2)}`;
+            document.getElementById('status-pnl').className = data.total_pnl >= 0 ? 'text-success' : 'text-danger';
+            
+            // Also update the position's PnL in the table
+            const rows = document.querySelectorAll('#positions-table-body tr');
+            rows.forEach(row => {
+                const eventIdCell = row.querySelector('td:first-child');
+                if (eventIdCell && eventIdCell.innerText == data.event_id) {
+                    const pnlCell = row.querySelector('td:last-child');
+                    if (pnlCell) {
+                        pnlCell.innerText = `$${data.event_pnl.toFixed(2)}`;
+                        pnlCell.className = data.event_pnl >= 0 ? 'positive' : 'negative';
+                        flashElement(pnlCell);
+                    }
+                }
+            });
+        }
+        
+        // Update trading status display
+        function updateTradingStatus(isPaused) {
+            const statusBadge = document.getElementById('trading-status');
+            const statusText = document.getElementById('trading-status-text');
+            const pauseButton = document.getElementById('pause-button');
+            const resumeButton = document.getElementById('resume-button');
+            
+            if (isPaused) {
+                statusBadge.className = 'badge bg-warning';
+                statusBadge.innerText = 'PAUSED';
+                statusText.innerText = 'Paused';
+                pauseButton.style.display = 'none';
+                resumeButton.style.display = 'block';
+            } else {
+                statusBadge.className = 'badge bg-success';
+                statusBadge.innerText = 'ACTIVE';
+                statusText.innerText = 'Active';
+                pauseButton.style.display = 'block';
+                resumeButton.style.display = 'none';
+            }
+        }
+        
+        // Update a parameter display
+        function updateParameter(paramName, value) {
+            switch(paramName) {
+                case 'btc_qty':
+                    document.getElementById('btc-qty').innerText = value;
+                    flashElement('btc-qty');
+                    break;
+                case 'eth_qty':
+                    document.getElementById('eth-qty').innerText = value;
+                    flashElement('eth-qty');
+                    break;
+                case 'threshold':
+                    document.getElementById('helix-threshold').innerText = value;
+                    flashElement('helix-threshold');
+                    break;
+                case 'step_size':
+                    document.getElementById('step-size').innerText = value;
+                    flashElement('step-size');
+                    break;
+                case 'pnl_target':
+                    document.getElementById('pnl-target').innerText = value;
+                    document.getElementById('pnl-target-display').innerText = `$${value}`;
+                    flashElement('pnl-target');
+                    flashElement('pnl-target-display');
+                    break;
+            }
+        }
+        
+        // Add a log message to the console
+        function addLogMessage(message) {
+            const logConsole = document.getElementById('log-console');
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const formattedMessage = `[${timestamp}] ${message}\n`;
+            
+            logConsole.innerText += formattedMessage;
+            
+            // Auto-scroll to bottom
+            logConsole.scrollTop = logConsole.scrollHeight;
+        }
+        
+        // Flash an element to highlight changes
+        function flashElement(elementId) {
+            const element = typeof elementId === 'string' ? document.getElementById(elementId) : elementId;
+            if (!element) return;
+            
+            const originalBackground = window.getComputedStyle(element).backgroundColor;
+            
+            element.style.transition = 'background-color 0.3s';
+            element.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+            
+            setTimeout(() => {
+                element.style.backgroundColor = originalBackground;
+                setTimeout(() => {
+                    element.style.transition = '';
+                }, 300);
+            }, 300);
+        }
+        
+        // Send a command to the server
+        function sendCommand(command) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    command: command
+                }));
+            } else {
+                addLogMessage('⚠️ Cannot send command: WebSocket not connected');
+            }
+        }
+        
+        // Set a parameter
+        function setParameter(param) {
+            const inputId = `new-${param.replace('_', '-')}`;
+            const input = document.getElementById(inputId);
+            
+            if (!input || !input.value) return;
+            
+            const value = parseFloat(input.value);
+            if (isNaN(value) || value <= 0) {
+                addLogMessage(`⚠️ Invalid value for ${param}`);
+                return;
+            }
+            
+            sendCommand(`set ${param} ${value}`);
+            input.value = '';
+        }
+        
+        // Clear log console
+        function clearLogs() {
+            document.getElementById('log-console').innerText = '';
+        }
+        
+        // Refresh data by fetching status
+        function refreshData() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => updateBotStatus(data))
+                .catch(error => console.error('Error fetching status:', error));
+        }
+        
+        // Refresh positions
+        function refreshPositions() {
+            fetch('/api/positions')
+                .then(response => response.json())
+                .then(data => {
+                    const positionsTable = document.getElementById('positions-table-body');
+                    positionsTable.innerHTML = '';
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(position => {
+                            const row = document.createElement('tr');
+                            
+                            const eventIdCell = document.createElement('td');
+                            eventIdCell.innerText = position.event_id;
+                            row.appendChild(eventIdCell);
+                            
+                            const helixCell = document.createElement('td');
+                            helixCell.innerText = position.helix.toFixed(4);
+                            helixCell.className = position.helix > 0 ? 'positive' : position.helix < 0 ? 'negative' : '';
+                            row.appendChild(helixCell);
+                            
+                            const ticketsCell = document.createElement('td');
+                            const tickets = position.positions.map(p => p.ticket).join(', ');
+                            ticketsCell.innerText = tickets;
+                            row.appendChild(ticketsCell);
+                            
+                            const pnlCell = document.createElement('td');
+                            pnlCell.innerText = `$${position.pnl.toFixed(2)}`;
+                            pnlCell.className = position.pnl >= 0 ? 'positive' : 'negative';
+                            row.appendChild(pnlCell);
+                            
+                            positionsTable.appendChild(row);
+                        });
+                    } else {
+                        const emptyRow = document.createElement('tr');
+                        const emptyCell = document.createElement('td');
+                        emptyCell.colSpan = 4;
+                        emptyCell.innerText = 'No active positions';
+                        emptyCell.style.textAlign = 'center';
+                        emptyRow.appendChild(emptyCell);
+                        positionsTable.appendChild(emptyRow);
+                    }
+                })
+                .catch(error => console.error('Error fetching positions:', error));
+        }
+        
+        // Update current time
+        function updateTime() {
+            document.getElementById('current-time').innerText = new Date().toLocaleTimeString();
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Connect to WebSocket
+            connectWebSocket();
+            
+            // Set up event listeners
+            document.getElementById('pause-button').addEventListener('click', function() {
+                sendCommand('pause');
+            });
+            
+            document.getElementById('resume-button').addEventListener('click', function() {
+                sendCommand('resume');
+            });
+            
+            document.getElementById('status-button').addEventListener('click', function() {
+                sendCommand('status');
+            });
+            
+            // Initial data load
+            refreshData();
+            
+            // Update time every second
+            setInterval(updateTime, 1000);
+            
+            // Set up input events (enter key to submit)
+            const inputs = document.querySelectorAll('.parameter-input input');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        const paramId = input.id.replace('new-', '').replace('-', '_');
+                        setParameter(paramId);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

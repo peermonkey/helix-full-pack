@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Helix Data Viewer - Helix Analytics Platform</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.0"></script>
+  <style>
+    :root {
+      /* Color System */
+      --color-primary: #5D5FEF;
+      --color-primary-light: #7879F1;
+      --color-primary-dark: #4A4ACD;
+      --color-secondary: #22C55E;
+      --color-accent: #F59E0B;
+      --color-danger: #EF4444;
+      --color-warning: #F97316;
+      --color-info: #3B82F6;
+      
+      /* Neutral Colors */
+      --color-bg: #F9FAFB;
+      --color-card: #FFFFFF;
+      --color-text-primary: #1F2937;
+      --color-text-secondary: #6B7280;
+      --color-text-tertiary: #9CA3AF;
+      --color-border: #E5E7EB;
+      --color-input-bg: #F3F4F6;
+      
+      /* Dark Mode Colors */
+      --color-bg-dark: #111827;
+      --color-card-dark: #1F2937;
+      --color-text-primary-dark: #F9FAFB;
+      --color-text-secondary-dark: #D1D5DB;
+      --color-text-tertiary-dark: #9CA3AF;
+      --color-border-dark: #374151;
+      --color-input-bg-dark: #374151;
+      
+      /* Spacing System */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+      
+      /* Border Radius */
+      --radius-sm: 0.25rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+      --radius-full: 9999px;
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      
+      /* Transitions */
+      --transition-fast: 150ms ease;
+      --transition-normal: 250ms ease;
+      --transition-slow: 350ms ease;
+      
+      /* Z-index layers */
+      --z-dropdown: 10;
+      --z-sticky: 20;
+      --z-fixed: 30;
+      --z-modal: 40;
+      --z-popover: 50;
+      --z-tooltip: 60;
+    }
+    
+    /* Core Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html {
+      font-size: 16px;
+      height: 100%;
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+      color: var(--color-text-primary);
+      background-color: var(--color-bg);
+      line-height: 1.5;
+      min-height: 100%;
+      transition: background-color var(--transition-normal), color var(--transition-normal);
+    }
+    
+    body.dark-mode {
+      --color-bg: var(--color-bg-dark);
+      --color-card: var(--color-card-dark);
+      --color-text-primary: var(--color-text-primary-dark);
+      --color-text-secondary: var(--color-text-secondary-dark);
+      --color-text-tertiary: var(--color-text-tertiary-dark);
+      --color-border: var(--color-border-dark);
+      --color-input-bg: var(--color-input-bg-dark);
+    }
+    
+    a {
+      color: var(--color-primary);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+    
+    a:hover {
+      color: var(--color-primary-dark);
+    }
+    
+    button, .btn {
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 500;
+      border: none;
+      outline: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      border-radius: var(--radius-md);
+      padding: var(--space-sm) var(--space-md);
+      transition: background-color var(--transition-fast), color var(--transition-fast), 
+                  transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    
+    .btn-primary {
+      background-color: var(--color-primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--color-primary-dark);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .btn-secondary {
+      background-color: var(--color-secondary);
+      color: white;
+    }
+    
+    .btn-ghost {
+      background-color: transparent;
+      color: var(--color-text-primary);
+      border: 1px solid var(--color-border);
+    }
+    
+    .btn-ghost:hover {
+      background-color: var(--color-input-bg);
+    }
+    
+    .btn-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+      border-radius: var(--radius-full);
+    }
+    
+    .positive {
+      color: var(--color-secondary);
+    }
+    
+    .negative {
+      color: var(--color-danger);
+    }
+    
+    .neutral {
+      color: var(--color-info);
+    }
+    
+    /* Layout */
+    .app-container {
+      display: grid;
+      grid-template-columns: 16rem 1fr;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      grid-column: 1;
+      grid-row: 1 / 3;
+      background-color: var(--color-card);
+      border-right: 1px solid var(--color-border);
+      padding: var(--space-md);
+      overflow-y: auto;
+      z-index: var(--z-sticky);
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    }
+    
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-md) 0;
+      margin-bottom: var(--space-lg);
+    }
+    
+    .logo {
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    
+    .sidebar-menu {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .menu-header {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: var(--space-md) var(--space-sm);
+    }
+    
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-md) var(--space-sm);
+      color: var(--color-text-secondary);
+      border-radius: var(--radius-md);
+      transition: background-color var(--transition-fast), color var(--transition-fast);
+    }
+    
+    .menu-item:hover {
+      background-color: var(--color-input-bg);
+      color: var(--color-text-primary);
+    }
+    
+    .menu-item.active {
+      background-color: var(--color-primary-light);
+      color: white;
+    }
+    
+    /* Top navigation */
+    .top-nav {
+      grid-column: 2;
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md) var(--space-xl);
+      background-color: var(--color-card);
+      border-bottom: 1px solid var(--color-border);
+      height: 4rem;
+    }
+    
+    .page-title {
+      font-weight: 600;
+      font-size: 1.25rem;
+    }
+    
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      color: var(--color-text-secondary);
+      font-size: 0.875rem;
+    }
+    
+    .breadcrumb-separator {
+      color: var(--color-text-tertiary);
+    }
+    
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    /* Main Content */
+    .main-content {
+      grid-column: 2;
+      grid-row: 2;
+      padding: var(--space-xl);
+      overflow-y: auto;
+    }
+    
+    /* Sections and Cards */
+    .section {
+      margin-bottom: var(--space-2xl);
+    }
+    
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-lg);
+    }
+    
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .card {
+      background-color: var(--color-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    }
+    
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .card-header {
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .card-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--color-text-primary);
+    }
+    
+    .card-body {
+      padding: var(--space-lg);
+    }
+    
+    .card-footer {
+      padding: var(--space-md) var(--space-lg);
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    /* Controls & Forms */
+    .controls-container {
+      background-color: var(--color-card);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      align-items: flex-end;
+      margin-bottom: var(--space-md);
+    }
+    
+    .control-group {
+      flex: 1;
+      min-width: 200px;
+      max-width: 300px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: var(--space-xs);
+      font-weight: 500;
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+    
+    select, input {
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background-color: var(--color-input-bg);
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: var(--color-text-primary);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    }
+    
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--color-primary-light);
+      box-shadow: 0 0 0 2px rgba(93, 95, 239, 0.25);
+    }
+    
+    .dark-mode select, .dark-mode input {
+      background-color: var(--color-input-bg);
+      color: var(--color-text-primary);
+      border-color: var(--color-border);
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    
+    /* Charts */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-xl);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .chart-container {
+      height: 350px;
+      padding: var(--space-md);
+      position: relative;
+    }
+    
+    /* Tables */
+    .table-container {
+      margin-top: var(--space-lg);
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .data-table th, .data-table td {
+      text-align: left;
+      padding: var(--space-md);
+      border-bottom: 1px solid var(--color-border);
+    }
+    
+    .data-table th {
+      background-color: var(--color-input-bg);
+      font-weight: 500;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .data-table tbody tr:hover {
+      background-color: var(--color-input-bg);
+    }
+    
+    .data-table th .sort-icon {
+      margin-left: var(--space-xs);
+      font-size: 0.75rem;
+    }
+    
+    .table-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-md);
+      border-top: 1px solid var(--color-border);
+    }
+    
+    .table-info {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+    
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+    
+    .pagination-button {
+      font-size: 0.875rem;
+      padding: var(--space-xs) var(--space-sm);
+    }
+    
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-xl);
+    }
+    
+    .stat-card {
+      background-color: var(--color-card);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+      border-left: 4px solid transparent;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .stat-card.primary {
+      border-left-color: var(--color-primary);
+    }
+    
+    .stat-card.secondary {
+      border-left-color: var(--color-secondary);
+    }
+    
+    .stat-card.warning {
+      border-left-color: var(--color-warning);
+    }
+    
+    .stat-card.info {
+      border-left-color: var(--color-info);
+    }
+    
+    .stat-card.danger {
+      border-left-color: var(--color-danger);
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: var(--space-xs);
+    }
+    
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--color-text-secondary);
+    }
+    
+    .stat-trend {
+      margin-top: var(--space-sm);
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-weight: 500;
+    }
+    
+    /* Loading Indicator */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(3px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: var(--z-modal);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition-normal), visibility var(--transition-normal);
+    }
+    
+    .loading-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Notifications & Messages */
+    .notification {
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    
+    .notification-info {
+      background-color: rgba(59, 130, 246, 0.1);
+      border-left: 4px solid var(--color-info);
+    }
+    
+    .notification-success {
+      background-color: rgba(34, 197, 94, 0.1);
+      border-left: 4px solid var(--color-secondary);
+    }
+    
+    .notification-warning {
+      background-color: rgba(249, 115, 22, 0.1);
+      border-left: 4px solid var(--color-warning);
+    }
+    
+    .notification-error {
+      background-color: rgba(239, 68, 68, 0.1);
+      border-left: 4px solid var(--color-danger);
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 1024px) {
+      .app-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 16rem;
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-xl);
+      }
+      
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      
+      .top-nav {
+        grid-column: 1;
+      }
+      
+      .main-content {
+        grid-column: 1;
+      }
+      
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .control-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .control-group {
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fa-solid fa-dna"></i>
+          <span>Helix</span>
+        </div>
+      </div>
+      
+      <!-- Main Navigation -->
+      <nav class="sidebar-menu">
+        <div class="menu-header">Dashboard</div>
+        <a href="/" class="menu-item">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </a>
+        <a href="/analytics" class="menu-item">
+          <i class="fas fa-chart-line"></i>
+          <span>Analytics</span>
+        </a>
+        
+        <div class="menu-header">Data Views</div>
+        <a href="/helix.html" class="menu-item active">
+          <i class="fas fa-dna"></i>
+          <span>Helix Data</span>
+        </a>
+        <a href="/crypto.html" class="menu-item">
+          <i class="fas fa-coins"></i>
+          <span>Crypto</span>
+        </a>
+        <a href="/prices.html" class="menu-item">
+          <i class="fas fa-dollar-sign"></i>
+          <span>Price Data</span>
+        </a>
+        <a href="/items.html" class="menu-item">
+          <i class="fas fa-box"></i>
+          <span>Items</span>
+        </a>
+        
+        <div class="menu-header">Settings</div>
+        <a href="/settings" class="menu-item">
+          <i class="fas fa-cog"></i>
+          <span>Preferences</span>
+        </a>
+        <a href="/account" class="menu-item">
+          <i class="fas fa-user"></i>
+          <span>Account</span>
+        </a>
+      </nav>
+      
+      <!-- Theme Switch -->
+      <div class="d-flex justify-between items-center mb-lg">
+        <span class="text-sm text-secondary">Dark Mode</span>
+        <div class="theme-switch">
+          <button id="theme-toggle" class="btn-icon btn-ghost">
+            <i class="fas fa-moon"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Top Navigation -->
+    <header class="top-nav">
+      <div>
+        <button id="menu-toggle" class="btn-icon btn-ghost" style="display: none;">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="breadcrumb">
+          <a href="/">Dashboard</a>
+          <span class="breadcrumb-separator">/</span>
+          <span class="page-title">Helix Data</span>
+        </div>
+      </div>
+      
+      <div class="nav-actions">
+        <button id="export-btn" class="btn btn-ghost">
+          <i class="fas fa-download"></i>
+          <span>Export</span>
+        </button>
+        <button id="refresh-btn" class="btn btn-primary">
+          <i class="fas fa-sync-alt"></i>
+          <span>Refresh</span>
+        </button>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Controls -->
+      <div class="controls-container">
+        <div class="control-row">
+          <div class="control-group">
+            <label for="timeframe-select">Timeframe</label>
+            <select id="timeframe-select">
+              <option value="1m">1 Minute</option>
+              <option value="3m">3 Minutes</option>
+              <option value="5m">5 Minutes</option>
+              <option value="15m">15 Minutes</option>
+              <option value="30m">30 Minutes</option>
+              <option value="1h">1 Hour</option>
+              <option value="4h">4 Hours</option>
+              <option value="6h">6 Hours</option>
+              <option value="8h">8 Hours</option>
+              <option value="12h">12 Hours</option>
+              <option value="1d" selected>1 Day</option>
+              <option value="1w">1 Week</option>
+              <option value="1M">1 Month</option>
+            </select>
+          </div>
+          
+          <div class="control-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="auto-refresh" checked>
+              <label for="auto-refresh">Auto-refresh data</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Summary Stats -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Performance Summary</h2>
+          <div id="update-time" class="text-sm text-secondary">Last updated: --</div>
+        </div>
+        
+        <div class="stats-grid" id="performance-summary">
+          <div class="stat-card primary">
+            <div class="stat-value" id="current-helix">--</div>
+            <div class="stat-label">Current Helix Value</div>
+            <div class="stat-trend trend-up" id="helix-trend">
+              <i class="fas fa-arrow-up"></i> --
+            </div>
+          </div>
+          
+          <div class="stat-card info">
+            <div class="stat-value" id="cumulative-helix">--</div>
+            <div class="stat-label">Cumulative Helix</div>
+            <div class="stat-trend trend-up" id="cumulative-trend">
+              <i class="fas fa-arrow-up"></i> --
+            </div>
+          </div>
+          
+          <div class="stat-card warning">
+            <div class="stat-value" id="btc-delta">--</div>
+            <div class="stat-label">BTC Delta</div>
+            <div class="stat-trend trend-up" id="btc-trend">
+              <i class="fas fa-arrow-up"></i> --
+            </div>
+          </div>
+          
+          <div class="stat-card secondary">
+            <div class="stat-value" id="eth-delta">--</div>
+            <div class="stat-label">ETH Delta</div>
+            <div class="stat-trend trend-down" id="eth-trend">
+              <i class="fas fa-arrow-down"></i> --
+            </div>
+          </div>
+          
+          <div class="stat-card danger">
+            <div class="stat-value" id="dominant-trend">--</div>
+            <div class="stat-label">Dominant Trend</div>
+            <div class="stat-trend" id="dom-percentage">--</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Charts -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Helix Charts</h2>
+        </div>
+        
+        <div class="charts-grid">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Helix Value</h3>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="helix-chart"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">BTC vs ETH Delta</h3>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="delta-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Historical Data -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">Historical Data</h2>
+          <div class="table-search">
+            <input type="text" id="table-search" placeholder="Search interpretation..." onkeyup="filterTable()">
+          </div>
+        </div>
+        
+        <div class="card">
+          <div id="historical-container">
+            <div class="card-body">
+              <div class="table-container">
+                <table class="data-table" id="helix-table">
+                  <thead>
+                    <tr>
+                      <th onclick="sortTable(0)">Time <span class="sort-icon">↓</span></th>
+                      <th onclick="sortTable(1)">Helix Value <span class="sort-icon"></span></th>
+                      <th onclick="sortTable(2)">Cumulative <span class="sort-icon"></span></th>
+                      <th onclick="sortTable(3)">BTC Delta (%) <span class="sort-icon"></span></th>
+                      <th onclick="sortTable(4)">ETH Delta (%) <span class="sort-icon"></span></th>
+                      <th>Interpretation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="6" class="text-center">Select a timeframe and click "Refresh" to load data</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="table-pagination">
+                <div class="table-info" id="page-indicator">Page 1 of 1</div>
+                <div class="pagination-controls">
+                  <button class="btn btn-ghost pagination-button" id="prev-page" onclick="changePage(-1)" disabled>Previous</button>
+                  <button class="btn btn-ghost pagination-button" id="next-page" onclick="changePage(1)" disabled>Next</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <script src="helix.js"></script>
+  <script>
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const toggleIcon = themeToggle.querySelector('i');
+    
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem('helixTheme') || 'light';
+    if (savedTheme === 'dark') {
+      body.classList.add('dark-mode');
+      toggleIcon.classList.replace('fa-moon', 'fa-sun');
+    }
+    
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('dark-mode');
+      
+      if (body.classList.contains('dark-mode')) {
+        toggleIcon.classList.replace('fa-moon', 'fa-sun');
+        localStorage.setItem('helixTheme', 'dark');
+      } else {
+        toggleIcon.classList.replace('fa-sun', 'fa-moon');
+        localStorage.setItem('helixTheme', 'light');
+      }
+    });
+    
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('show');
+      });
+    }
+    
+    // Handle responsive layout
+    function handleResize() {
+      if (window.innerWidth <= 1024) {
+        menuToggle.style.display = 'block';
+      } else {
+        menuToggle.style.display = 'none';
+        sidebar.classList.remove('show');
+      }
+    }
+    
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+  </script>
+</body>
+</html> 
